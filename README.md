@@ -71,3 +71,5 @@ export default defineConfig([
   },
 ])
 ```
+
+테스트용 종훈입니다 CI/CD push test!
