@@ -1,0 +1,45 @@
+name: Trigger auto deployment for gallemalle-fe
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/gallemalle-fe-AutoDeployTrigger-dd5b102f-f025-44b3-b13f-d3b4aff3d4a3.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.GALLEMALLEFE_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: tresbien.azurecr.io
+          registryUsername: ${{ secrets.GALLEMALLEFE_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.GALLEMALLEFE_REGISTRY_PASSWORD }}
+          containerAppName: gallemalle-fe
+          resourceGroup: tres-bien
+          imageToBuild: tresbien.azurecr.io/gallemalle-fe:${{ github.sha }}
+          
+            
+
+     
+
