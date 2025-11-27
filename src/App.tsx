@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import MainSearch from './components/MainSearch'
 import DashboardGrid from './components/DashboardGrid'
+import MapSection from './components/MapSection'
 import Footer from './components/Footer'
 import BottomNav from './components/BottomNav'
 import Login from './pages/Login'
@@ -15,6 +16,7 @@ function Home() {
       <Hero />
       <MainSearch />
       <DashboardGrid />
+      <MapSection />
     </main>
   )
 }

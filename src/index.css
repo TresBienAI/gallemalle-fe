@@ -23,21 +23,46 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f5f5f5;
-  /* Neutral background for desktop */
+  background-color: #f0f0f0;
   display: flex;
   justify-content: center;
+  font-family: 'Inter', sans-serif;
 }
 
 #root {
   width: 100%;
   max-width: 480px;
-  /* Mobile width */
   min-height: 100vh;
-  background-color: white;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  /* Liquid Gradient Background */
+  background: linear-gradient(125deg,
+      #ffffff 0%,
+      #e0f2f1 25%,
+      /* Very light teal */
+      #ffe4d6 50%,
+      /* Peach */
+      #e1bee7 75%,
+      /* Light Purple */
+      #ffffff 100%);
+  background-size: 400% 400%;
+  animation: liquidFlow 15s ease infinite;
+
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
   position: relative;
   margin: 0 auto;
+}
+
+@keyframes liquidFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 button {

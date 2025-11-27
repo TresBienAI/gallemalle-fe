@@ -6,9 +6,13 @@
 }
 
 .dashboard-card {
-    background-color: #FFE4D6;
-    /* Peach color */
-    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+
+    border-radius: 1.5rem;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -16,12 +20,13 @@
     justify-content: space-between;
     height: 120px;
     text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
 }
 
 .dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .card-icon-wrapper {

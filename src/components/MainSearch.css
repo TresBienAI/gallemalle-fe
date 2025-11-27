@@ -4,21 +4,24 @@
 }
 
 .main-search-box {
-    background-color: #FFE4D6;
-    /* Peach color */
-    border-radius: 1rem;
-    padding: 1.5rem;
-    height: 140px;
+    background: #ffe4d6;
+    border-radius: 20px;
+    padding: 2rem;
+    height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     position: relative;
+    box-shadow: none;
+    border: none;
 }
 
 .search-label {
     color: #4b5563;
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     font-weight: 500;
+    margin-bottom: 1rem;
+    text-align: left;
 }
 
 .search-input-area {
@@ -30,11 +33,13 @@
 .search-input {
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e5e7eb;
     width: 100%;
     margin-right: 10px;
     outline: none;
     color: #1a1a1a;
+    font-size: 1rem;
+    padding-bottom: 0.5rem;
 }
 
 .send-btn {
