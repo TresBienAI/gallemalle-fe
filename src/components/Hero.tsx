@@ -1,36 +1,26 @@
 import './Hero.css'
-import BackgroundSlider from './BackgroundSlider'
 
 function Hero() {
     return (
         <section className="hero">
-            <BackgroundSlider />
-            <div className="hero-content">
-                <h1 className="hero-title">
-                    안녕! 난 <span className="highlight">갈래말래</span>야,<br />
-                    애매하긴 해.
-                </h1>
-                <p className="hero-subtitle">
-                    스타일과 예산만 알려줘, 나머진 내가 다 할게.
-                </p>
-
-                <div className="hero-search-box">
-                    <div className="search-input-group">
-                        <label>어디로 떠나볼까?</label>
-                        <input type="text" placeholder="서울의 핫플레이스..." />
-                    </div>
-                    <button className="search-button">
-                        여행 시작하기
-                    </button>
+            <div className="hero-top">
+                <div className="hero-text-group">
+                    <h1 className="hero-title">
+                        여행 갈래말래? 💬
+                    </h1>
+                    <p className="hero-subtitle">
+                        여행 계획을 위한 AI 도구,<br />
+                        지금 바로 사용해 보세요.
+                    </p>
                 </div>
-
-                <p className="hero-easter-egg">
-                    으아아아아아 애매하긴 해.. 근데 깃 푸시도 안티그래비티가 다 해줌
-                </p>
-            </div>
-            <div className="hero-visual">
-                {/* Placeholder for hero image or animation */}
-                <div className="hero-circle"></div>
+                <div className="hero-image">
+                    {/* Using a placeholder for the 3D airplane. In a real app, this would be a local asset. */}
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/2200/2200326.png"
+                        alt="Airplane"
+                        className="airplane-img"
+                    />
+                </div>
             </div>
         </section>
     )

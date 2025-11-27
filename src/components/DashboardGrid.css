@@ -1,0 +1,43 @@
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 0 1.5rem 2rem;
+}
+
+.dashboard-card {
+    background-color: #FFE4D6;
+    /* Peach color */
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    height: 120px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-icon-wrapper {
+    margin-bottom: 1rem;
+}
+
+.card-icon {
+    font-size: 2rem;
+    color: #006D77;
+    /* Teal color */
+}
+
+/* Custom icon styling if using SVGs later, for now emoji is fine */
+
+.card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #006D77;
+}

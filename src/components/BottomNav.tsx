@@ -1,24 +1,25 @@
+import { NavLink } from 'react-router-dom'
 import './BottomNav.css'
 
 function BottomNav() {
     return (
         <nav className="bottom-nav">
-            <a href="#" className="nav-item active">
+            <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <span className="nav-icon">🏠</span>
                 <span className="nav-label">홈</span>
-            </a>
-            <a href="#" className="nav-item">
+            </NavLink>
+            <NavLink to="/search" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <span className="nav-icon">🔍</span>
                 <span className="nav-label">검색</span>
-            </a>
-            <a href="#" className="nav-item">
+            </NavLink>
+            <NavLink to="/wishlist" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <span className="nav-icon">❤️</span>
                 <span className="nav-label">찜</span>
-            </a>
-            <a href="#" className="nav-item">
+            </NavLink>
+            <NavLink to="/login" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <span className="nav-icon">👤</span>
                 <span className="nav-label">마이</span>
-            </a>
+            </NavLink>
         </nav>
     )
 }
