@@ -1,0 +1,86 @@
+.inspiration {
+    padding: 6rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.inspiration-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.inspiration-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1a1a1a;
+}
+
+.inspiration-header p {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.inspiration-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.place-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3/4;
+    background-color: #f3f4f6;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.place-card:hover {
+    transform: scale(1.02);
+}
+
+.place-image {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: 1;
+}
+
+.place-info {
+    position: relative;
+    z-index: 2;
+    padding: 1.5rem;
+    color: white;
+}
+
+.place-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.place-info p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1024px) {
+    .inspiration-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .inspiration-grid {
+        grid-template-columns: 1fr;
+    }
+}
