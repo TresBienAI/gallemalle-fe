@@ -1,12 +1,14 @@
 import './Hero.css'
+import BackgroundSlider from './BackgroundSlider'
 
 function Hero() {
     return (
         <section className="hero">
+            <BackgroundSlider />
             <div className="hero-content">
                 <h1 className="hero-title">
                     안녕! 난 <span className="highlight">갈래말래</span>야,<br />
-                    너의 서울 여행 플래너.
+                    애매하긴 해.
                 </h1>
                 <p className="hero-subtitle">
                     스타일과 예산만 알려줘, 나머진 내가 다 할게.

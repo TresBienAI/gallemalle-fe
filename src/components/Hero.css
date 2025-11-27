@@ -1,12 +1,13 @@
 .hero {
-    padding: 8rem 2rem 4rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 8rem max(2rem, calc((100vw - 1200px) / 2)) 4rem;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
     min-height: 80vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .hero-content {
