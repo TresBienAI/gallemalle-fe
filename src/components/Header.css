@@ -1,26 +1,22 @@
 .header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     z-index: 1000;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem 2rem;
+    padding: 0.8rem 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .logo a {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.2rem;
+    font-weight: 800;
     color: #1a1a1a;
     text-decoration: none;
 }
@@ -41,6 +37,11 @@
     color: #f97316;
 }
 
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .header-actions .btn-primary {
     background-color: #1a1a1a;
     color: white;
@@ -54,4 +55,12 @@
 
 .header-actions .btn-primary:hover {
     background-color: #f97316;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    cursor: pointer;
 }

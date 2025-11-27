@@ -4,6 +4,7 @@ import Hero from './components/Hero'
 import Features from './components/Features'
 import Inspiration from './components/Inspiration'
 import Footer from './components/Footer'
+import BottomNav from './components/BottomNav'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Inspiration />
       </main>
       <Footer />
+      <BottomNav />
     </div>
   )
 }
