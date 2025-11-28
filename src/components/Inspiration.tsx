@@ -11,14 +11,16 @@ function Inspiration() {
     return (
         <section className="inspiration">
             <div className="inspiration-header">
-                <h2>어디로 떠나볼까요?</h2>
+                <h2>다음 여행지는 어디로?</h2>
                 <p>서울의 가장 핫한 여행지를 둘러보세요.</p>
             </div>
 
             <div className="inspiration-grid">
                 {places.map((place, index) => (
                     <div key={index} className="place-card">
-                        <div className="place-image">{place.image}</div>
+                        <div className="place-image-container">
+                            <span className="place-emoji">{place.image}</span>
+                        </div>
                         <div className="place-info">
                             <h3>{place.name}</h3>
                             <p>{place.desc}</p>

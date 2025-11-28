@@ -3,23 +3,30 @@ import './Hero.css'
 function Hero() {
     return (
         <section className="hero">
-            <div className="hero-top">
-                <div className="hero-text-group">
-                    <h1 className="hero-title">
-                        여행 갈래말래? 💬
-                    </h1>
-                    <p className="hero-subtitle">
-                        여행 계획을 위한 AI 도구,<br />
-                        지금 바로 사용해 보세요.
-                    </p>
+            <div className="hero-content">
+                <h1 className="hero-title">
+                    안녕, 난 <span className="highlight">갈래말래야</span>
+                </h1>
+                <p className="hero-subtitle">
+                    취향과 예산을 말해줘, 완벽한 여행을 설계해줄게.
+                </p>
+
+                <div className="hero-search-box">
+                    <div className="search-input-group">
+                        <input
+                            type="text"
+                            placeholder="예: 12월에 따뜻한 나라로 3박 4일 여행 가고 싶어"
+                        />
+                    </div>
+                    <button className="search-button">
+                        <span className="send-icon">➤</span>
+                    </button>
                 </div>
-                <div className="hero-image">
-                    {/* Using a placeholder for the 3D airplane. In a real app, this would be a local asset. */}
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/512/2200/2200326.png"
-                        alt="Airplane"
-                        className="airplane-img"
-                    />
+
+                <div className="hero-tags">
+                    <span>#겨울여행</span>
+                    <span>#가성비</span>
+                    <span>#호캉스</span>
                 </div>
             </div>
         </section>
