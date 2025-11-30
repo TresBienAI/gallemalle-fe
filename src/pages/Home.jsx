@@ -119,7 +119,7 @@ export function Home() {
                                     type="submit"
                                     className="bg-white text-black hover:bg-gray-100 px-8"
                                 >
-                                    {isChatMode ? "전송" : "Go!"}
+                                    {isChatMode ? "Go!" : "Go!"}
                                 </Button>
                             </div>
                         </div>
