@@ -74,7 +74,7 @@ export function Home() {
                     {!isChatMode ? (
                         <>
                             <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                                TresVien
+                                갈래말래!?
                             </h1>
                             <p className="text-xl md:text-2xl text-gray-200 font-light">
                                 나만의 여행 코스를 만들고 공유해보세요.

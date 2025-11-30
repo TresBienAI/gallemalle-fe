@@ -11,12 +11,12 @@ export function Login() {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (email === 'test@tresvien.com' && password === '1234') {
+        if (email.trim() && password.trim()) {
             localStorage.setItem('isLoggedIn', 'true');
             navigate('/');
             window.location.reload(); // Force reload to update Header
         } else {
-            alert('아이디 또는 비밀번호가 올바르지 않습니다.\n(ID: test@tresvien.com / PW: 1234)');
+            alert('아이디와 비밀번호를 입력해주세요.');
         }
     };
 
@@ -38,18 +38,18 @@ export function Login() {
                         <div className="space-y-4 rounded-md shadow-sm">
                             <div>
                                 <label htmlFor="email-address" className="sr-only">
-                                    이메일 주소
+                                    아이디
                                 </label>
                                 <input
                                     id="email-address"
                                     name="email"
-                                    type="email"
-                                    autoComplete="email"
+                                    type="text"
+                                    autoComplete="username"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="relative block w-full rounded-md border-0 bg-white/5 py-3 px-4 text-white ring-1 ring-inset ring-white/10 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
-                                    placeholder="이메일 주소"
+                                    placeholder="아이디"
                                 />
                             </div>
                             <div>
