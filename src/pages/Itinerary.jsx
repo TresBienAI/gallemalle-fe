@@ -1,37 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { MapPin, Calendar, Share, Star, Clock, FileImage } from 'lucide-react';
 
 export function Itinerary() {
     const { destination } = useParams();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
 
-    // Parse duration from destination string
+    // Get dynamic data from chat if available
+    const dynamicItinerary = location.state?.itineraryData;
+
+    // Parse duration from destination string (Fallback)
     const parseDuration = (text) => {
         const decoded = decodeURIComponent(text || '');
-
-        // Handle "당일" or "당일치기"
         if (decoded.includes('당일')) return 1;
-
-        // Handle "N박 M일" pattern (e.g., 9박 10일 -> 10)
         const nightDayMatch = decoded.match(/(\d+)박\s*(\d+)일/);
-        if (nightDayMatch) {
-            return parseInt(nightDayMatch[2], 10);
-        }
-
-        // Handle "N일" pattern (e.g., 5일 -> 5)
+        if (nightDayMatch) return parseInt(nightDayMatch[2], 10);
         const dayMatch = decoded.match(/(\d+)일/);
-        if (dayMatch) {
-            return parseInt(dayMatch[1], 10);
-        }
-
-        return 3; // Default to 3 days
+        if (dayMatch) return parseInt(dayMatch[1], 10);
+        return 3;
     };
 
-    const days = parseDuration(destination);
-    const itineraryDays = Array.from({ length: days }, (_, i) => i + 1);
+    // Normalize data from Chat or API
+    const { days, schedule } = React.useMemo(() => {
+        if (!dynamicItinerary) {
+            // Fallback for static/url-based access
+            const d = parseDuration(destination);
+            return {
+                days: d,
+                schedule: null
+            };
+        }
+
+        // Case 1: API Response (Array of days)
+        if (Array.isArray(dynamicItinerary.itinerary)) {
+            const sched = {};
+            dynamicItinerary.itinerary.forEach(dayPlan => {
+                sched[dayPlan.day] = dayPlan.schedule.map(item => ({
+                    time: item.start_time,
+                    place: item.place.name,
+                    description: item.place.description
+                }));
+            });
+            return {
+                days: dynamicItinerary.duration_days,
+                schedule: sched
+            };
+        }
+
+        // Case 2: Chat Response (Object with schedule key)
+        return {
+            days: dynamicItinerary.days,
+            schedule: dynamicItinerary.schedule
+        };
+    }, [dynamicItinerary, destination]);
+
+    const itineraryDays = schedule
+        ? Object.keys(schedule).map(d => parseInt(d))
+        : Array.from({ length: days }, (_, i) => i + 1);
 
     useEffect(() => {
         // Simulate API call
@@ -133,54 +161,48 @@ export function Itinerary() {
                                 {day}
                             </div>
                             <h3 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                                {day}일차: 탐험 및 문화 체험
+                                {day}일차: {dynamicItinerary ? '여행 코스' : '탐험 및 문화 체험'}
                             </h3>
 
                             <div className="space-y-6">
-                                <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-yellow-500/20 rounded-xl text-yellow-400">
-                                                <Clock className="w-5 h-5" />
+                                {schedule ? (
+                                    // Dynamic Schedule Rendering
+                                    schedule[day]?.map((activity, idx) => (
+                                        <div key={idx} className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-pink-500/20 rounded-xl text-pink-400">
+                                                        <Clock className="w-5 h-5" />
+                                                    </div>
+                                                    <h4 className="text-xl font-bold">{activity.place}</h4>
+                                                </div>
+                                                <span className="text-sm text-gray-400 font-mono">{activity.time}</span>
                                             </div>
-                                            <h4 className="text-xl font-bold">오전 활동</h4>
+                                            <p className="text-gray-300 leading-relaxed pl-14">
+                                                {activity.description}
+                                            </p>
                                         </div>
-                                        <span className="text-sm text-gray-400 font-mono">09:00 AM</span>
-                                    </div>
-                                    <p className="text-gray-300 leading-relaxed pl-14">
-                                        상징적인 랜드마크를 방문하고 현지 문화를 체험하세요. 전통 조식으로 하루를 시작합니다.
-                                    </p>
-                                </div>
-
-                                <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-orange-500/20 rounded-xl text-orange-400">
-                                                <Clock className="w-5 h-5" />
+                                    ))
+                                ) : (
+                                    // Fallback Static Schedule
+                                    <>
+                                        <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-yellow-500/20 rounded-xl text-yellow-400">
+                                                        <Clock className="w-5 h-5" />
+                                                    </div>
+                                                    <h4 className="text-xl font-bold">오전 활동</h4>
+                                                </div>
+                                                <span className="text-sm text-gray-400 font-mono">09:00 AM</span>
                                             </div>
-                                            <h4 className="text-xl font-bold">오후 모험</h4>
+                                            <p className="text-gray-300 leading-relaxed pl-14">
+                                                상징적인 랜드마크를 방문하고 현지 문화를 체험하세요. 전통 조식으로 하루를 시작합니다.
+                                            </p>
                                         </div>
-                                        <span className="text-sm text-gray-400 font-mono">02:00 PM</span>
-                                    </div>
-                                    <p className="text-gray-300 leading-relaxed pl-14">
-                                        도시의 숨겨진 명소를 탐험하세요. 가이드 투어를 하거나 활기찬 거리를 거닐어보세요.
-                                    </p>
-                                </div>
-
-                                <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-500/20 rounded-xl text-blue-400">
-                                                <Clock className="w-5 h-5" />
-                                            </div>
-                                            <h4 className="text-xl font-bold">저녁 식사</h4>
-                                        </div>
-                                        <span className="text-sm text-gray-400 font-mono">07:00 PM</span>
-                                    </div>
-                                    <p className="text-gray-300 leading-relaxed pl-14">
-                                        파노라마 전망이 있는 최고급 레스토랑에서 석양과 함께 저녁 식사를 즐기세요.
-                                    </p>
-                                </div>
+                                        {/* ... (keep other static items if needed, or just replace all) */}
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -232,6 +254,6 @@ export function Itinerary() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

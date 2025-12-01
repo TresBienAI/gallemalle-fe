@@ -13,10 +13,25 @@ export const travelService = {
         return response.data;
     },
 
-    // Create a travel plan
-    // data: { destination: string, duration: string, travelers: string, style: string[], ... }
-    createTravelPlan: async (data) => {
-        const response = await axiosClient.post('/travel/plan', data);
+    // Create a travel plan (JSON)
+    // Query: destination, duration_days, budget, budget_level
+    // Body: travel_styles, requirements
+    createTravelPlan: async (params) => {
+        const queryParams = {
+            destination: params.destination,
+            duration_days: params.duration_days,
+            budget: params.budget,
+            budget_level: params.budget_level
+        };
+
+        const bodyData = {
+            travel_styles: params.travel_styles,
+            requirements: params.requirements
+        };
+
+        const response = await axiosClient.post('/travel/plans', bodyData, {
+            params: queryParams
+        });
         return response.data;
     },
 

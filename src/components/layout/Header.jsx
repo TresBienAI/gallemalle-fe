@@ -9,7 +9,10 @@ export function Header() {
             <Link to="/" className="text-white text-2xl font-bold tracking-tighter">
                 TresVien
             </Link>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+                <Link to="/planner" className="text-white font-medium hover:opacity-80 transition-opacity">
+                    플래너
+                </Link>
                 {isLoggedIn ? (
                     <Link to="/mypage" className="text-white font-medium hover:opacity-80 transition-opacity">
                         마이페이지

@@ -56,6 +56,74 @@ export function Home() {
 
     const [threadId, setThreadId] = useState(null);
 
+    // Helper to parse chat response into structured itinerary
+    const parseItinerary = (text) => {
+        try {
+            const lines = text.split('\n');
+            let days = 1;
+            const schedule = {};
+            let currentDay = 1;
+
+            // Try to find duration
+            if (text.includes('당일')) days = 1;
+            else {
+                const nightDayMatch = text.match(/(\d+)박\s*(\d+)일/);
+                if (nightDayMatch) days = parseInt(nightDayMatch[2]);
+            }
+
+            // Parse schedule
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+
+                // Check for day header (e.g., "1일차", "Day 1", "첫째 날")
+                const dayMatch = trimmedLine.match(/(\d+)일차|Day\s*(\d+)|(\d+)일째/);
+                if (dayMatch) {
+                    currentDay = parseInt(dayMatch[1] || dayMatch[2] || dayMatch[3]);
+                    if (!schedule[currentDay]) schedule[currentDay] = [];
+                    return; // Skip header line
+                }
+
+                // Check for activity
+                // Supports:
+                // - 10:00 장소 설명
+                // 1. 10:00 장소 설명
+                // - 오전 10:00 ~ 11:00 장소 설명
+                const activityRegex = /^(?:[-*•]|\d+\.)?\s*((?:오전|오후)?\s*\d{1,2}:\d{2}(?:[~-]\s*(?:오전|오후)?\s*\d{1,2}:\d{2})?)\s+(.*)/;
+                const activityMatch = trimmedLine.match(activityRegex);
+
+                if (activityMatch) {
+                    const time = activityMatch[1].trim();
+                    const rest = activityMatch[2].trim();
+
+                    // Simple heuristic: First word is place, rest is description
+                    // Unless there's a colon or specific separator
+                    let place = rest;
+                    let description = '';
+
+                    const firstSpaceIndex = rest.indexOf(' ');
+                    if (firstSpaceIndex > 0) {
+                        place = rest.substring(0, firstSpaceIndex);
+                        description = rest.substring(firstSpaceIndex + 1).trim();
+                    }
+
+                    // If place is too long (likely a sentence), treat whole thing as description or title
+                    if (place.length > 15 && description.length === 0) {
+                        // Keep as place (title)
+                    }
+
+                    if (!schedule[currentDay]) schedule[currentDay] = [];
+                    schedule[currentDay].push({ time, place, description });
+                }
+            });
+
+            return { days, schedule };
+        } catch (e) {
+            console.error("Parsing failed", e);
+            return null;
+        }
+    };
+
     const handleSearch = async (e) => {
         e.preventDefault();
         if (destination.trim()) {
@@ -74,10 +142,30 @@ export function Home() {
                     setThreadId(response.thread_id);
                 }
 
+                const aiResponseText = response.response;
+                let action = null;
+
+                // Check if response looks like an itinerary
+                if (aiResponseText.includes('제안서') || aiResponseText.includes('코스')) {
+                    const parsedData = parseItinerary(aiResponseText);
+                    if (parsedData && Object.keys(parsedData.schedule).length > 0) {
+                        action = {
+                            label: '일정표 보기',
+                            onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
+                                state: { itineraryData: parsedData }
+                            })
+                        };
+                    }
+                }
+
                 // Add AI response to messages
                 setMessages((prev) => [
                     ...prev,
-                    { text: response.response, isUser: false }
+                    {
+                        text: aiResponseText,
+                        isUser: false,
+                        action: action
+                    }
                 ]);
 
             } catch (error) {
