@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { travelService } from '../api/travelService';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
@@ -11,6 +12,37 @@ export function Home() {
     const [messages, setMessages] = useState([]);
     const navigate = useNavigate();
     const scrollContainerRef = React.useRef(null);
+    const [backendDestinations, setBackendDestinations] = useState([]);
+
+    // Local image mapping
+    const destinationImages = {
+        '서울': '/images/seoul.png',
+        '부산': 'https://picsum.photos/800/800?random=1',
+        '경주': 'https://picsum.photos/800/800?random=2',
+        '제주': 'https://picsum.photos/800/800?random=3',
+        '제주도': 'https://picsum.photos/800/800?random=3',
+        '강릉': 'https://picsum.photos/800/800?random=4',
+        '파리': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+        '뉴욕': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80',
+        '발리': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
+    };
+
+    const defaultImage = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80';
+
+    useEffect(() => {
+        const fetchDestinations = async () => {
+            try {
+                const data = await travelService.getDestinations();
+                if (data && data.destinations) {
+                    setBackendDestinations(data.destinations);
+                }
+            } catch (error) {
+                console.error("Failed to fetch destinations:", error);
+                setBackendDestinations(['서울', '부산', '경주', '제주', '강릉', '파리', '뉴욕', '발리']);
+            }
+        };
+        fetchDestinations();
+    }, []);
 
     const scroll = (direction) => {
         if (scrollContainerRef.current) {
@@ -57,16 +89,10 @@ export function Home() {
         }
     };
 
-    const featuredDestinations = [
-        { name: '서울', image: '/images/seoul.png' },
-        { name: '부산', image: 'https://picsum.photos/800/800?random=1' },
-        { name: '경주', image: 'https://picsum.photos/800/800?random=2' },
-        { name: '제주', image: 'https://picsum.photos/800/800?random=3' },
-        { name: '강릉', image: 'https://picsum.photos/800/800?random=4' },
-        { name: '파리', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
-        { name: '뉴욕', image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80' },
-        { name: '발리', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80' },
-    ];
+    const featuredDestinations = backendDestinations.map(name => ({
+        name,
+        image: destinationImages[name] || defaultImage
+    }));
 
     return (
         <div className="min-h-screen bg-black text-white font-sans">

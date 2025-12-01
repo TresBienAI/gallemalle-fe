@@ -109,7 +109,6 @@ export function Itinerary() {
                                 </h1>
                                 <div className="flex gap-6 text-lg text-gray-300">
                                     <span className="flex items-center gap-2"><Calendar className="w-5 h-5 text-pink-500" /> {days}일 코스</span>
-                                    <span className="flex items-center gap-2"><MapPin className="w-5 h-5 text-purple-500" /> 아시아</span>
                                 </div>
                             </div>
                             <Button
