@@ -2,13 +2,25 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { testBackendConnection } from '../api/testService';
 
 export function Home() {
     const [destination, setDestination] = useState('');
     const [isChatMode, setIsChatMode] = useState(false);
     const [messages, setMessages] = useState([]);
     const navigate = useNavigate();
+    const scrollContainerRef = React.useRef(null);
+
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = 300;
+            scrollContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -46,10 +58,14 @@ export function Home() {
     };
 
     const featuredDestinations = [
-        { name: 'Bali', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80' },
-        { name: 'Paris', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
-        { name: 'Tokyo', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80' },
-        { name: 'New York', image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80' },
+        { name: '서울', image: '/images/seoul.png' },
+        { name: '부산', image: 'https://picsum.photos/800/800?random=1' },
+        { name: '경주', image: 'https://picsum.photos/800/800?random=2' },
+        { name: '제주', image: 'https://picsum.photos/800/800?random=3' },
+        { name: '강릉', image: 'https://picsum.photos/800/800?random=4' },
+        { name: '파리', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
+        { name: '뉴욕', image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80' },
+        { name: '발리', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80' },
     ];
 
     return (
@@ -57,7 +73,7 @@ export function Home() {
             <Header />
 
             {/* Hero Section */}
-            <div className="relative h-screen flex flex-col justify-center items-center px-4 overflow-hidden">
+            <div className="relative h-[80vh] flex flex-col justify-center items-center px-4 overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <div
@@ -126,7 +142,7 @@ export function Home() {
                     </form>
 
                     {!isChatMode && (
-                        <div className="pt-8 flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+                        <div className="pt-2 flex flex-wrap justify-center gap-4 text-sm text-gray-400">
                             <span>추천:</span>
                             {featuredDestinations.map((dest) => (
                                 <button
@@ -137,6 +153,19 @@ export function Home() {
                                     {dest.name}
                                 </button>
                             ))}
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const data = await testBackendConnection();
+                                        alert('Backend Connected! ' + JSON.stringify(data));
+                                    } catch (error) {
+                                        alert('Connection Failed: ' + error.message);
+                                    }
+                                }}
+                                className="text-red-500 hover:text-red-400 underline underline-offset-4 transition-colors"
+                            >
+                                Test Backend
+                            </button>
                         </div>
                     )}
                 </div>
@@ -144,27 +173,48 @@ export function Home() {
 
             {/* Featured Section */}
             {!isChatMode && (
-                <div className="py-20 px-6 max-w-7xl mx-auto">
+                <div className="py-10 px-6 max-w-7xl mx-auto">
                     <h2 className="text-3xl font-bold mb-10 text-center">인기 여행지</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {featuredDestinations.map((dest) => (
-                            <div
-                                key={dest.name}
-                                onClick={() => navigate(`/itinerary/${dest.name}`)}
-                                className="group relative h-80 rounded-2xl overflow-hidden cursor-pointer"
-                            >
-                                <img
-                                    src={dest.image}
-                                    alt={dest.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                                <div className="absolute bottom-6 left-6">
-                                    <h3 className="text-2xl font-bold">{dest.name}</h3>
-                                    <p className="text-gray-300 text-sm mt-1 group-hover:translate-x-2 transition-transform">일정 보기 &rarr;</p>
+                    <div
+                        className="relative group/slider"
+                    >
+                        <button
+                            onClick={() => scroll('left')}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity disabled:opacity-0 -ml-4"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <button
+                            onClick={() => scroll('right')}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity disabled:opacity-0 -mr-4"
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
+                        <div
+                            ref={scrollContainerRef}
+                            className="flex overflow-x-auto pb-12 pt-4 px-10 snap-x snap-mandatory scrollbar-hide"
+                        >
+                            {featuredDestinations.map((dest) => (
+                                <div
+                                    key={dest.name}
+                                    onClick={() => navigate(`/itinerary/${dest.name}`)}
+                                    className="group relative w-[160px] md:w-[220px] aspect-square rounded-2xl overflow-hidden cursor-pointer snap-center flex-shrink-0 -ml-6 first:ml-0 transition-all duration-300 hover:scale-110 hover:z-50 hover:shadow-2xl"
+                                >
+                                    <img
+                                        src={dest.image}
+                                        alt={dest.name}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                                    <div className="absolute bottom-6 left-6">
+                                        <h3 className="text-3xl font-bold mb-2">{dest.name}</h3>
+                                        <p className="text-gray-300 text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
+                                            일정 보기 <ChevronRight className="w-4 h-4" />
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
