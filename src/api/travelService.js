@@ -21,10 +21,11 @@ export const travelService = {
     },
 
     // Chat with the AI assistant
-    chat: async (message, history = []) => {
-        const response = await axiosClient.post('/chat/message', {
+    chat: async (message, thread_id = null, user_id = null) => {
+        const response = await axiosClient.post('/chat/travel', {
             message,
-            history
+            thread_id,
+            user_id
         });
         return response.data;
     }

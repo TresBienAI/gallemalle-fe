@@ -54,37 +54,38 @@ export function Home() {
         }
     };
 
-    const handleSearch = (e) => {
+    const [threadId, setThreadId] = useState(null);
+
+    const handleSearch = async (e) => {
         e.preventDefault();
         if (destination.trim()) {
-            const newMessage = { text: destination, isUser: true };
+            const userMessage = destination;
+            const newMessage = { text: userMessage, isUser: true };
             setMessages((prev) => [...prev, newMessage]);
             setDestination('');
+            setIsChatMode(true);
 
-            if (!isChatMode) {
-                setIsChatMode(true);
-                // Simulate initial AI response
-                setTimeout(() => {
-                    setMessages((prev) => [
-                        ...prev,
-                        {
-                            text: `${newMessage.text} 여행을 계획 중이시군요! 어떤 스타일의 여행을 원하시나요?`,
-                            isUser: false,
-                            action: {
-                                label: '여행 계획 생성하기',
-                                onClick: () => navigate(`/itinerary/${encodeURIComponent(newMessage.text)}`)
-                            }
-                        },
-                    ]);
-                }, 1000);
-            } else {
-                // Simulate subsequent AI response
-                setTimeout(() => {
-                    setMessages((prev) => [
-                        ...prev,
-                        { text: "흥미롭네요! 더 자세히 알려주세요.", isUser: false },
-                    ]);
-                }, 1000);
+            try {
+                // Call backend API
+                const response = await travelService.chat(userMessage, threadId);
+
+                // Update thread_id if returned
+                if (response.thread_id) {
+                    setThreadId(response.thread_id);
+                }
+
+                // Add AI response to messages
+                setMessages((prev) => [
+                    ...prev,
+                    { text: response.response, isUser: false }
+                ]);
+
+            } catch (error) {
+                console.error("Chat API Error:", error);
+                setMessages((prev) => [
+                    ...prev,
+                    { text: "죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.", isUser: false }
+                ]);
             }
         }
     };
