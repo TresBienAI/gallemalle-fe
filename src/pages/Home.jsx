@@ -17,29 +17,25 @@ export function Home() {
     // Local image mapping
     const destinationImages = {
         '서울': '/images/seoul.png',
-        '부산': 'https://picsum.photos/800/800?random=1',
-        '경주': 'https://picsum.photos/800/800?random=2',
-        '제주': 'https://picsum.photos/800/800?random=3',
-        '제주도': 'https://picsum.photos/800/800?random=3',
-        '강릉': 'https://picsum.photos/800/800?random=4',
+        '부산': 'https://picsum.photos/800/800?random=10',
+        '제주': 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+        '제주도': 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+        '경주': 'https://images.unsplash.com/photo-1583248369069-9d91f1640fe6?auto=format&fit=crop&w=800&q=80',
+        '강릉': 'https://images.unsplash.com/photo-1629163330223-c183571735a1?auto=format&fit=crop&w=800&q=80',
+        '전주': 'https://picsum.photos/800/800?random=11',
+        '속초': 'https://picsum.photos/800/800?random=12',
+        '양양': 'https://picsum.photos/800/800?random=13',
         '파리': 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
         '뉴욕': 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80',
-        '발리': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
     };
 
     const defaultImage = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80';
 
     useEffect(() => {
         const fetchDestinations = async () => {
-            try {
-                const data = await travelService.getDestinations();
-                if (data && data.destinations) {
-                    setBackendDestinations(data.destinations);
-                }
-            } catch (error) {
-                console.error("Failed to fetch destinations:", error);
-                setBackendDestinations(['서울', '부산', '경주', '제주', '강릉', '파리', '뉴욕', '발리']);
-            }
+            // Desired list of featured destinations
+            const desiredDestinations = ['서울', '부산', '제주도', '경주', '강릉', '전주', '속초', '양양'];
+            setBackendDestinations(desiredDestinations);
         };
         fetchDestinations();
     }, []);
@@ -89,8 +85,18 @@ export function Home() {
                 // - 10:00 장소 설명
                 // 1. 10:00 장소 설명
                 // - 오전 10:00 ~ 11:00 장소 설명
+                // Fallback: 1. 장소 (No time)
                 const activityRegex = /^(?:[-*•]|\d+\.)?\s*((?:오전|오후)?\s*\d{1,2}:\d{2}(?:[~-]\s*(?:오전|오후)?\s*\d{1,2}:\d{2})?)\s+(.*)/;
-                const activityMatch = trimmedLine.match(activityRegex);
+                let activityMatch = trimmedLine.match(activityRegex);
+
+                // Fallback for list items without time (e.g., "1. 경복궁", "- 남산타워")
+                if (!activityMatch) {
+                    const listRegex = /^(?:[-*•]|\d+\.)\s+(.*)/;
+                    const listMatch = trimmedLine.match(listRegex);
+                    if (listMatch) {
+                        activityMatch = [listMatch[0], '추천', listMatch[1]];
+                    }
+                }
 
                 if (activityMatch) {
                     const time = activityMatch[1].trim();
@@ -146,16 +152,14 @@ export function Home() {
                 let action = null;
 
                 // Check if response looks like an itinerary
-                if (aiResponseText.includes('제안서') || aiResponseText.includes('코스')) {
-                    const parsedData = parseItinerary(aiResponseText);
-                    if (parsedData && Object.keys(parsedData.schedule).length > 0) {
-                        action = {
-                            label: '일정표 보기',
-                            onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
-                                state: { itineraryData: parsedData }
-                            })
-                        };
-                    }
+                const parsedData = parseItinerary(aiResponseText);
+                if (parsedData && Object.keys(parsedData.schedule).length > 0) {
+                    action = {
+                        label: '일정표 보기',
+                        onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
+                            state: { itineraryData: parsedData }
+                        })
+                    };
                 }
 
                 // Add AI response to messages
@@ -295,13 +299,13 @@ export function Home() {
                     >
                         <button
                             onClick={() => scroll('left')}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity disabled:opacity-0 -ml-4"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm transition-opacity -ml-4"
                         >
                             <ChevronLeft className="w-6 h-6" />
                         </button>
                         <button
                             onClick={() => scroll('right')}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm opacity-0 group-hover/slider:opacity-100 transition-opacity disabled:opacity-0 -mr-4"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm transition-opacity -mr-4"
                         >
                             <ChevronRight className="w-6 h-6" />
                         </button>

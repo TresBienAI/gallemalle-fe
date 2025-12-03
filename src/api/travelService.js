@@ -43,5 +43,31 @@ export const travelService = {
             user_id
         });
         return response.data;
+    },
+
+    // Update hotel and recalculate itinerary
+    updateHotel: async (params) => {
+        const response = await axiosClient.post('/travel/plans/update-hotel', {
+            destination: params.destination,
+            travel_styles: params.travel_styles || [],
+            duration_days: params.duration_days,
+            budget: params.budget || "50만원",
+            selected_places: params.selected_places,
+            new_hotel: params.new_hotel,
+            requirements: params.requirements || []
+        });
+        return response.data;
+    },
+
+    // Replace a place and recalculate day schedule
+    replacePlace: async (params) => {
+        const response = await axiosClient.post('/travel/plans/replace-place', {
+            day: params.day,
+            old_place: params.old_place,
+            new_place: params.new_place,
+            all_places: params.all_places,
+            duration_days: params.duration_days
+        });
+        return response.data;
     }
 };

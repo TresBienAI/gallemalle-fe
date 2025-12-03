@@ -5,6 +5,20 @@ import { Button } from '../components/ui/Button';
 
 export function MyPage() {
     const navigate = useNavigate();
+    const [savedItineraries, setSavedItineraries] = React.useState([]);
+
+    React.useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem('savedItineraries') || '[]');
+        setSavedItineraries(saved);
+    }, []);
+
+    const handleDelete = (id) => {
+        if (window.confirm('정말 삭제하시겠습니까?')) {
+            const newSaved = savedItineraries.filter(item => item.id !== id);
+            localStorage.setItem('savedItineraries', JSON.stringify(newSaved));
+            setSavedItineraries(newSaved);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('isLoggedIn');
@@ -30,7 +44,34 @@ export function MyPage() {
 
                     <div className="border-t border-white/10 pt-6">
                         <h3 className="text-xl font-semibold mb-4">내 여행 일정</h3>
-                        <p className="text-gray-400">저장된 여행 일정이 없습니다.</p>
+                        {savedItineraries.length === 0 ? (
+                            <p className="text-gray-400">저장된 여행 일정이 없습니다.</p>
+                        ) : (
+                            <div className="grid gap-4">
+                                {savedItineraries.map((item) => (
+                                    <div key={item.id} className="bg-white/5 p-4 rounded-xl flex justify-between items-center hover:bg-white/10 transition-colors">
+                                        <div>
+                                            <h4 className="font-bold text-lg">{item.destination} 여행</h4>
+                                            <p className="text-sm text-gray-400">{item.days}일 코스 • {item.date} 저장됨</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={() => navigate(`/itinerary/${item.destination}`, { state: { itineraryData: item.data } })}
+                                                className="bg-white/10 hover:bg-white/20 text-sm px-4 py-2"
+                                            >
+                                                보기
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="bg-red-500/10 text-red-500 hover:bg-red-500/20 text-sm px-4 py-2"
+                                            >
+                                                삭제
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="border-t border-white/10 pt-6">

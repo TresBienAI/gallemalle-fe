@@ -52,7 +52,7 @@ export function Planner() {
 
             // Navigate to Itinerary page with result
             navigate(`/itinerary/${encodeURIComponent(formData.destination)}`, {
-                state: { itineraryData: result }
+                state: { itineraryData: result.data }
             });
 
         } catch (error) {
@@ -136,8 +136,8 @@ export function Planner() {
                                     type="button"
                                     onClick={() => handleStyleToggle(style.value)}
                                     className={`p-3 rounded-xl border transition-all duration-200 ${formData.styles.includes(style.value)
-                                            ? 'bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]'
-                                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:border-white/30'
+                                        ? 'bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]'
+                                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:border-white/30'
                                         }`}
                                 >
                                     {style.label}
