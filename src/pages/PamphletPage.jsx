@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, DollarSign, Users, ArrowLeft, Clock, Map as MapIcon } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -64,7 +64,7 @@ export function PamphletPage() {
     }, [schedule]);
 
     return (
-        <div className="min-h-screen bg-[#f5f5f0] text-gray-900 font-serif">
+        <div className="min-h-screen bg-white text-gray-900 font-sans">
             {/* Navigation Bar (No-print) */}
             <div className="fixed top-0 left-0 right-0 p-4 flex justify-between items-center bg-white/80 backdrop-blur-sm border-b border-gray-200 z-50 print:hidden">
                 <button
@@ -75,8 +75,15 @@ export function PamphletPage() {
                 </button>
                 <div className="flex gap-4">
                     <button
+                        onClick={() => window.open('https://www.instagram.com/', '_blank')}
+                        className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity font-bold text-sm flex items-center gap-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        Instagram 공유
+                    </button>
+                    <button
                         onClick={() => window.print()}
-                        className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition-colors font-sans text-sm font-bold"
+                        className="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition-colors font-bold text-sm"
                     >
                         PDF로 저장 / 인쇄
                     </button>
@@ -84,96 +91,118 @@ export function PamphletPage() {
             </div>
 
             {/* Pamphlet Content */}
-            <div className="max-w-[210mm] mx-auto bg-white shadow-2xl min-h-screen my-8 p-12 print:m-0 print:shadow-none print:w-full print:max-w-none">
+            <div className="max-w-[210mm] mx-auto bg-white shadow-2xl min-h-screen my-8 print:m-0 print:shadow-none print:w-full print:max-w-none overflow-hidden">
 
-                {/* Header Section */}
-                <header className="text-center border-b-4 border-double border-gray-800 pb-8 mb-12">
-                    <div className="text-sm tracking-[0.3em] text-gray-500 uppercase mb-4">Travel Itinerary</div>
-                    <h1 className="text-6xl font-bold mb-6 text-gray-900">{destination}</h1>
-                    <div className="flex justify-center gap-8 text-sm font-sans text-gray-600">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{duration} Days</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>{travelers || '성인 2명'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            <span>{budget || 'Budget TBD'}</span>
+                {/* Hero Header */}
+                <div className="relative h-[300px] w-full overflow-hidden">
+                    <img
+                        src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1920&q=80"
+                        alt={destination}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 w-full p-8 text-white">
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <p className="text-sm tracking-[0.5em] uppercase mb-2 opacity-80">Travel Itinerary</p>
+                                <h1 className="text-6xl font-black tracking-tight">{destination}</h1>
+                            </div>
+                            <div className="flex gap-6 text-sm font-medium opacity-90">
+                                <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {duration} Days</span>
+                                <span className="flex items-center gap-2"><Users className="w-4 h-4" /> {travelers || '2'} Travelers</span>
+                                <span className="flex items-center gap-2"><DollarSign className="w-4 h-4" /> {budget || 'TBD'}</span>
+                            </div>
                         </div>
                     </div>
-                </header>
-
-                {/* Map Section */}
-                <div className="mb-12 h-[300px] w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200 grayscale hover:grayscale-0 transition-all duration-500 print:grayscale-0">
-                    <MapContainer
-                        bounds={allPositions.length > 0 ? allPositions : [[37.5665, 126.9780]]}
-                        zoom={10}
-                        style={{ height: '100%', width: '100%' }}
-                        zoomControl={false}
-                        attributionControl={false}
-                    >
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                        />
-                        {allPositions.map((pos, idx) => (
-                            <Marker key={idx} position={pos} />
-                        ))}
-                        {allPositions.length > 1 && (
-                            <Polyline positions={allPositions} color="#000" weight={2} dashArray="5, 5" />
-                        )}
-                    </MapContainer>
                 </div>
 
-                {/* Timeline Section */}
-                <div className="space-y-12">
-                    {days.map((day) => (
-                        <div key={day} className="break-inside-avoid">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold font-sans">
-                                    {day}
-                                </div>
-                                <h3 className="text-2xl font-bold border-b-2 border-gray-200 flex-1 pb-2">Day {day}</h3>
-                            </div>
+                <div className="p-8">
+                    {/* Map Strip */}
+                    <div className="mb-8 h-[150px] w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-200 grayscale print:grayscale-0">
+                        <MapContainer
+                            bounds={allPositions.length > 0 ? allPositions : [[37.5665, 126.9780]]}
+                            zoom={10}
+                            style={{ height: '100%', width: '100%' }}
+                            zoomControl={false}
+                            attributionControl={false}
+                            dragging={false}
+                            scrollWheelZoom={false}
+                        >
+                            <TileLayer
+                                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                            />
+                            {allPositions.map((pos, idx) => (
+                                <Marker key={idx} position={pos} />
+                            ))}
+                            {allPositions.length > 1 && (
+                                <Polyline positions={allPositions} color="#000" weight={2} dashArray="5, 5" />
+                            )}
+                        </MapContainer>
+                    </div>
 
-                            <div className="pl-6 border-l border-gray-300 ml-6 space-y-8">
-                                {schedule[day]?.map((item, idx) => (
-                                    <div key={idx} className="relative pl-8">
-                                        <div className="absolute -left-[5px] top-2 w-2.5 h-2.5 bg-gray-400 rounded-full ring-4 ring-white"></div>
-                                        <div className="flex gap-4 items-start">
-                                            <div className="min-w-[80px] font-sans text-sm text-gray-500 pt-1">
-                                                {item.time || item.start_time}
+                    {/* Grid Layout for Days */}
+                    <div className="grid grid-cols-2 gap-8">
+                        {days.map((day) => (
+                            <div key={day} className="break-inside-avoid mb-4">
+                                <div className="flex items-center gap-3 mb-4 border-b-2 border-black pb-2">
+                                    <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold text-lg">
+                                        {day}
+                                    </div>
+                                    <h3 className="text-xl font-bold uppercase tracking-wide">Day {day}</h3>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {schedule[day]?.map((item, idx) => (
+                                        <div key={idx} className="flex gap-3 group">
+                                            {/* Time Column */}
+                                            <div className="w-12 pt-1 text-right">
+                                                <span className="text-xs font-bold text-gray-400 font-mono block">
+                                                    {item.time || item.start_time}
+                                                </span>
                                             </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-900 mb-1">
-                                                    {item.place?.name || item.place}
-                                                </h4>
-                                                <p className="text-sm text-gray-600 leading-relaxed">
-                                                    {item.place?.description || item.description}
-                                                </p>
-                                                {(item.place?.category || item.category) && (
-                                                    <div className="flex gap-2 mt-2">
-                                                        {(item.place?.category || item.category || []).slice(0, 3).map((cat, i) => (
-                                                            <span key={i} className="text-[10px] uppercase tracking-wider bg-gray-100 px-2 py-1 rounded text-gray-500">
-                                                                {cat}
-                                                            </span>
-                                                        ))}
+
+                                            {/* Content Card */}
+                                            <div className="flex-1 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:border-gray-300 transition-colors">
+                                                <div className="flex">
+                                                    {/* Image (Small Square) */}
+                                                    {(item.place?.image_url || item.image_url) && (
+                                                        <div className="w-20 h-20 flex-shrink-0">
+                                                            <img
+                                                                src={item.place?.image_url || item.image_url}
+                                                                alt=""
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    <div className="p-3 flex-1 min-w-0">
+                                                        <h4 className="font-bold text-sm text-gray-900 truncate">
+                                                            {item.place?.name || item.place}
+                                                        </h4>
+                                                        <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                                                            {(item.place?.category || item.category || []).slice(0, 2).map((cat, i) => (
+                                                                <span key={i} className="text-[9px] uppercase tracking-wider bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-500">
+                                                                    {cat}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 line-clamp-2 leading-snug">
+                                                            {item.place?.description || item.description}
+                                                        </p>
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-gray-400 text-sm font-sans">
-                    <p>Created with GalleMalle AI Planner</p>
+                <footer className="mt-8 pt-6 border-t border-gray-100 text-center text-gray-400 text-[10px] uppercase tracking-widest pb-8">
+                    Designed by GalleMalle AI Planner
                 </footer>
             </div>
         </div>

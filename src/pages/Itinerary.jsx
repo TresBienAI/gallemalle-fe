@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
-import { MapPin, Calendar, Share, Star, Clock, FileImage, Navigation, Bus, Footprints } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapPin, Calendar, Share, Star, Clock, FileImage, Navigation, Bus, Footprints, Car, Bike, X } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -24,6 +24,98 @@ function ChangeView({ bounds }) {
         }
     }, [bounds, map]);
     return null;
+}
+
+function TravelModeSelector({ distanceKm, initialMode, initialTimeMin, start, end }) {
+    const [selectedMode, setSelectedMode] = useState(initialMode || 'walk');
+
+    // Estimate time based on mode and distance
+    const estimatedTime = React.useMemo(() => {
+        if (!distanceKm) return 0;
+
+        // Speeds in km/h
+        const speeds = {
+            walk: 4,
+            bike: 15,
+            bus: 20, // Average city bus speed including stops
+            car: 30  // Average city driving speed
+        };
+
+        // Base time in minutes
+        let time = (distanceKm / speeds[selectedMode]) * 60;
+
+        // Add penalties/buffers
+        if (selectedMode === 'bus') time += 10; // Wait time
+        if (selectedMode === 'car') time += 5;  // Parking/Traffic buffer
+
+        // If it's the initial mode provided by backend, use that exact time
+        if (selectedMode === initialMode && initialTimeMin) {
+            return initialTimeMin;
+        }
+
+        return Math.round(time);
+    }, [distanceKm, selectedMode, initialMode, initialTimeMin]);
+
+    const modes = [
+        { id: 'walk', icon: Footprints, label: '도보' },
+        { id: 'bike', icon: Bike, label: '자전거' },
+        { id: 'bus', icon: Bus, label: '대중교통' },
+        { id: 'car', icon: Car, label: '자동차' },
+    ];
+
+    const handleGoClick = (e) => {
+        e.stopPropagation();
+        if (!start || !end) {
+            alert('출발지 또는 도착지 정보가 부족합니다.');
+            return;
+        }
+
+        // Map internal modes to Naver Map modes
+        const naverModes = {
+            walk: 'walk',
+            bike: 'bicycle',
+            bus: 'transit',
+            car: 'driving'
+        };
+
+        const mode = naverModes[selectedMode] || 'walk';
+        const url = `https://map.naver.com/v5/directions/${start.lng},${start.lat},${encodeURIComponent(start.name)}/${end.lng},${end.lat},${encodeURIComponent(end.name)}/${mode}`;
+
+        window.open(url, '_blank');
+    };
+
+    return (
+        <div className="ml-12 mb-6 flex items-center gap-4 text-sm bg-white/5 p-2 rounded-2xl border border-white/5 w-fit backdrop-blur-md">
+            <div className="flex gap-1 bg-black/20 p-1 rounded-xl">
+                {modes.map((mode) => (
+                    <button
+                        key={mode.id}
+                        onClick={() => setSelectedMode(mode.id)}
+                        className={`p-2 rounded-lg transition-all ${selectedMode === mode.id
+                            ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg'
+                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                            }`}
+                        title={mode.label}
+                    >
+                        <mode.icon className="w-4 h-4" />
+                    </button>
+                ))}
+            </div>
+            <div className="flex items-center gap-3 pr-4 border-r border-white/10 mr-2">
+                <span className="font-mono text-lg font-bold text-pink-400">
+                    {estimatedTime}<span className="text-xs text-gray-400 ml-1">분</span>
+                </span>
+                <span className="text-gray-700">|</span>
+                <span className="text-gray-400 text-xs">{distanceKm}km</span>
+            </div>
+            <button
+                onClick={handleGoClick}
+                className="bg-white text-black hover:bg-gray-200 px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 transition-colors"
+            >
+                GO! <Navigation className="w-3 h-3" />
+            </button>
+        </div>
+    );
 }
 
 export function Itinerary() {
@@ -112,6 +204,12 @@ export function Itinerary() {
     const [replacingPlace, setReplacingPlace] = useState(false);
     const [selectedPlaceToReplace, setSelectedPlaceToReplace] = useState(null);
     const [selectedDayForReplace, setSelectedDayForReplace] = useState(null);
+
+    // Share Modal State
+    const [showShareModal, setShowShareModal] = useState(false);
+
+    // Large Map State
+    const [showLargeMap, setShowLargeMap] = useState(false);
 
     // Update local schedule when dynamicItinerary changes
     useEffect(() => {
@@ -372,19 +470,23 @@ export function Itinerary() {
                                     currentSchedule[day]?.map((activity, idx) => (
                                         <div key={idx} className="relative">
                                             {/* Travel Connector Info */}
+                                            {/* Travel Connector Info */}
                                             {activity.travel_from_previous && (
-                                                <div className="ml-12 mb-6 flex items-center gap-3 text-sm text-gray-400 bg-white/5 p-3 rounded-xl border border-white/5 w-fit">
-                                                    {activity.travel_from_previous.mode === 'walk' ? (
-                                                        <Footprints className="w-4 h-4 text-green-400" />
-                                                    ) : (
-                                                        <Bus className="w-4 h-4 text-blue-400" />
-                                                    )}
-                                                    <span className="font-mono">
-                                                        {activity.travel_from_previous.time_minutes}분
-                                                    </span>
-                                                    <span className="text-gray-600">|</span>
-                                                    <span>{activity.travel_from_previous.distance_km}km</span>
-                                                </div>
+                                                <TravelModeSelector
+                                                    distanceKm={activity.travel_from_previous.distance_km}
+                                                    initialMode={activity.travel_from_previous.mode}
+                                                    initialTimeMin={activity.travel_from_previous.time_minutes}
+                                                    start={idx > 0 ? {
+                                                        name: currentSchedule[day][idx - 1].place,
+                                                        lat: currentSchedule[day][idx - 1].latitude,
+                                                        lng: currentSchedule[day][idx - 1].longitude
+                                                    } : null}
+                                                    end={{
+                                                        name: activity.place,
+                                                        lat: activity.latitude,
+                                                        lng: activity.longitude
+                                                    }}
+                                                />
                                             )}
 
                                             <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg relative overflow-hidden">
@@ -481,6 +583,10 @@ export function Itinerary() {
                                 {/* Markers */}
                                 {mapData.positions.map((pos, idx) => (
                                     <Marker key={idx} position={[pos.lat, pos.lng]}>
+                                        <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
+                                            <div className="font-bold text-sm">{pos.name}</div>
+                                            <div className="text-xs text-gray-500 capitalize">{pos.type}</div>
+                                        </Tooltip>
                                         <Popup className="text-black">
                                             <div className="font-bold">{idx + 1}. {pos.name}</div>
                                             <div className="text-xs text-gray-600 capitalize">{pos.type}</div>
@@ -496,8 +602,12 @@ export function Itinerary() {
                                         <h4 className="font-bold text-sm">Day {selectedDay} 루트</h4>
                                         <p className="text-xs text-gray-400">{mapData.positions.length}개 장소 방문</p>
                                     </div>
-                                    <Button size="sm" className="bg-white text-black hover:bg-gray-200 text-xs h-8">
-                                        <Navigation className="w-3 h-3 mr-1" /> 크게 보기
+                                    <Button
+                                        size="sm"
+                                        className="bg-white text-black hover:bg-gray-200 text-xs h-8"
+                                        onClick={() => setShowLargeMap(true)}
+                                    >
+                                        크게 보기
                                     </Button>
                                 </div>
                             </div>
@@ -527,7 +637,10 @@ export function Itinerary() {
                                 >
                                     호텔 변경하기
                                 </Button>
-                                <Button className="w-full bg-transparent border border-white/20 hover:bg-white/10 py-4 rounded-xl text-gray-300 hover:text-white transition-all">
+                                <Button
+                                    className="w-full bg-transparent border border-white/20 hover:bg-white/10 py-4 rounded-xl text-gray-300 hover:text-white transition-all"
+                                    onClick={() => setShowShareModal(true)}
+                                >
                                     <Share className="w-5 h-5 mr-2 inline" /> 일정 공유하기
                                 </Button>
                                 <Button
@@ -622,6 +735,96 @@ export function Itinerary() {
                         >
                             취소
                         </Button>
+                    </div>
+                </div>
+            )}
+            {/* Share Modal */}
+            {showShareModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowShareModal(false)}>
+                    <div className="bg-gray-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold mb-6 text-white">일정 공유하기</h3>
+
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert('링크가 복사되었습니다!');
+                                    setShowShareModal(false);
+                                }}
+                                className="w-full bg-white text-black hover:bg-gray-200 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <Users className="w-5 h-5" /> 친구 초대하기 (링크 복사)
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    alert('카카오톡 공유 기능은 준비 중입니다.\n(링크 복사를 이용해주세요)');
+                                }}
+                                className="w-full bg-[#FEE500] text-[#000000] hover:opacity-90 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-opacity"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.94-.122.49.178.483.376.351.265-.176 2.924-1.986 3.386-2.296.564.08 1.144.122 1.748.122 4.97 0 9-3.185 9-7.115S16.97 3 12 3z" /></svg>
+                                카카오톡 공유하기
+                            </button>
+                        </div>
+
+                        <button
+                            className="mt-6 text-gray-500 hover:text-white text-sm underline"
+                            onClick={() => setShowShareModal(false)}
+                        >
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Large Map Modal */}
+            {showLargeMap && (
+                <div className="fixed inset-0 z-[200] bg-black/90 flex flex-col">
+                    <div className="p-4 flex justify-between items-center bg-black/50 backdrop-blur-md border-b border-white/10">
+                        <h3 className="text-xl font-bold text-white">지도 크게 보기</h3>
+                        <button
+                            onClick={() => setShowLargeMap(false)}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    <div className="flex-1 relative">
+                        <MapContainer
+                            center={[37.5665, 126.9780]}
+                            zoom={12}
+                            style={{ height: '100%', width: '100%' }}
+                        >
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                            />
+                            <ChangeView bounds={mapData.bounds} />
+
+                            {/* Route Line */}
+                            {mapData.positions.length > 1 && (
+                                <Polyline
+                                    positions={mapData.positions.map(p => [p.lat, p.lng])}
+                                    color="#ec4899" // Pink-500
+                                    weight={4}
+                                    opacity={0.7}
+                                    dashArray="10, 10"
+                                />
+                            )}
+
+                            {/* Markers */}
+                            {mapData.positions.map((pos, idx) => (
+                                <Marker key={idx} position={[pos.lat, pos.lng]}>
+                                    <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
+                                        <div className="font-bold text-sm">{pos.name}</div>
+                                        <div className="text-xs text-gray-500 capitalize">{pos.type}</div>
+                                    </Tooltip>
+                                    <Popup className="text-black">
+                                        <div className="font-bold">{idx + 1}. {pos.name}</div>
+                                        <div className="text-xs text-gray-600 capitalize">{pos.type}</div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MapContainer>
                     </div>
                 </div>
             )}
