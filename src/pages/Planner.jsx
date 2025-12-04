@@ -52,7 +52,13 @@ export function Planner() {
 
             // Navigate to Itinerary page with result
             navigate(`/itinerary/${encodeURIComponent(formData.destination)}`, {
-                state: { itineraryData: result.data }
+                state: {
+                    itineraryData: result.data,
+                    budget: formData.budget,
+                    duration: formData.duration,
+                    styles: formData.styles,
+                    requirements: formData.requirements ? [formData.requirements] : []
+                }
             });
 
         } catch (error) {

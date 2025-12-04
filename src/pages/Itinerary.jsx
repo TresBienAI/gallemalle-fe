@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { MapPin, Calendar, Share, Star, Clock, FileImage, Navigation, Bus, Footprints } from 'lucide-react';
@@ -120,11 +120,19 @@ export function Itinerary() {
         }
     }, [schedule]);
 
+    const navigate = useNavigate();
+
     const handleGeneratePamphlet = () => {
-        alert(`${destination} 여행 팸플릿을 생성 중입니다...\n(잠시만 기다려주세요)`);
-        setTimeout(() => {
-            setShowPamphlet(true);
-        }, 1000);
+        navigate('/pamphlet', {
+            state: {
+                destination,
+                days,
+                budget: location.state?.budget,
+                travelers: location.state?.travelers,
+                duration: days,
+                itineraryData: dynamicItinerary || { schedule: currentSchedule }
+            }
+        });
     };
 
     // Hotel Options (Mock)
@@ -157,7 +165,9 @@ export function Itinerary() {
                 destination,
                 duration_days: days,
                 selected_places: allPlaces,
-                new_hotel: newHotel
+                new_hotel: newHotel,
+                travel_styles: location.state?.styles || [],
+                requirements: location.state?.requirements || []
             }));
 
             // Update schedule with new result
@@ -505,11 +515,11 @@ export function Itinerary() {
                                 </div>
                                 <div className="flex justify-between items-center p-3 bg-white/5 rounded-2xl">
                                     <span>예산</span>
-                                    <span className="text-white font-bold">$$$</span>
+                                    <span className="text-white font-bold">{location.state?.budget || '미정'}</span>
                                 </div>
                                 <div className="flex justify-between items-center p-3 bg-white/5 rounded-2xl">
                                     <span>여행객</span>
-                                    <span className="text-white font-bold">성인 2명</span>
+                                    <span className="text-white font-bold">성인 {location.state?.travelers || 2}명</span>
                                 </div>
                                 <hr className="border-white/10" />
                                 <Button className="w-full bg-white text-black hover:bg-gray-200 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-white/20 transition-all"

@@ -7,6 +7,8 @@ import { Itinerary } from './pages/Itinerary';
 import { Planner } from './pages/Planner';
 import { Footer } from './components/layout/Footer';
 
+import { PamphletPage } from './pages/PamphletPage';
+
 function App() {
   return (
     <Router>
@@ -16,6 +18,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/itinerary/:destination" element={<Itinerary />} />
+        <Route path="/pamphlet" element={<PamphletPage />} />
       </Routes>
       <Footer />
     </Router>
