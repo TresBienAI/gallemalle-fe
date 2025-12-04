@@ -2,7 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
-import { MapPin, Calendar, Share, Star, Clock, FileImage } from 'lucide-react';
+import { MapPin, Calendar, Share, Star, Clock, FileImage, Navigation, Bus, Footprints } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix Leaflet marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Component to update map view bounds
+function ChangeView({ bounds }) {
+    const map = useMap();
+    useEffect(() => {
+        if (bounds && bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+    }, [bounds, map]);
+    return null;
+}
 
 export function Itinerary() {
     const { destination } = useParams();
@@ -41,7 +63,13 @@ export function Itinerary() {
                 sched[dayPlan.day] = dayPlan.schedule.map(item => ({
                     time: item.start_time,
                     place: item.place.name,
-                    description: item.place.description
+                    description: item.place.description,
+                    type: item.place.type || 'attraction',
+                    latitude: item.place.latitude || 0,
+                    longitude: item.place.longitude || 0,
+                    image_url: item.place.image_url,
+                    category: item.place.category,
+                    travel_from_previous: item.travel_from_previous
                 }));
             });
             return {
@@ -60,6 +88,9 @@ export function Itinerary() {
     const itineraryDays = schedule
         ? Object.keys(schedule).map(d => parseInt(d))
         : Array.from({ length: days }, (_, i) => i + 1);
+
+    // State for currently selected day to show on map
+    const [selectedDay, setSelectedDay] = useState(1);
 
     useEffect(() => {
         // Simulate API call
@@ -115,7 +146,9 @@ export function Itinerary() {
                     allPlaces.push({
                         name: item.place,
                         description: item.description,
-                        // Add other fields if available in item, or backend handles it
+                        type: item.type || 'attraction',
+                        latitude: item.latitude || 0,
+                        longitude: item.longitude || 0
                     });
                 });
             });
@@ -123,7 +156,7 @@ export function Itinerary() {
             const result = await import('../api/travelService').then(m => m.travelService.updateHotel({
                 destination,
                 duration_days: days,
-                selected_places: allPlaces, // This might need refinement based on backend expectation
+                selected_places: allPlaces,
                 new_hotel: newHotel
             }));
 
@@ -133,7 +166,13 @@ export function Itinerary() {
                 newSched[dayPlan.day] = dayPlan.schedule.map(item => ({
                     time: item.start_time,
                     place: item.place.name,
-                    description: item.place.description
+                    description: item.place.description,
+                    type: item.place.type || 'attraction',
+                    latitude: item.place.latitude || 0,
+                    longitude: item.place.longitude || 0,
+                    image_url: item.place.image_url,
+                    category: item.place.category,
+                    travel_from_previous: item.travel_from_previous
                 }));
             });
             setCurrentSchedule(newSched);
@@ -149,11 +188,11 @@ export function Itinerary() {
 
     // Place Replacement Options (Mock - ideally dynamic based on type)
     const replacementOptions = [
-        { name: '남산타워', type: 'attraction', description: '서울의 랜드마크, 전망대' },
-        { name: '익선동 한옥거리', type: 'culture', description: '트렌디한 한옥 카페와 맛집' },
-        { name: '더현대 서울', type: 'shopping', description: '최신 트렌드 쇼핑몰' },
-        { name: '청계천', type: 'nature', description: '도심 속 휴식 공간' },
-        { name: '국립중앙박물관', type: 'museum', description: '한국의 역사와 문화' }
+        { name: '남산타워', type: 'attraction', description: '서울의 랜드마크, 전망대', image_url: 'https://images.unsplash.com/photo-1604975999077-ad6379979350?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', category: ['랜드마크', '전망대'] },
+        { name: '익선동 한옥거리', type: 'culture', description: '트렌디한 한옥 카페와 맛집', image_url: 'https://images.unsplash.com/photo-1604362610191-031201509312?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', category: ['한옥', '카페', '맛집'] },
+        { name: '더현대 서울', type: 'shopping', description: '최신 트렌드 쇼핑몰', image_url: 'https://images.unsplash.com/photo-1620792196720-31278144211a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', category: ['쇼핑', '백화점'] },
+        { name: '청계천', type: 'nature', description: '도심 속 휴식 공간', image_url: 'https://images.unsplash.com/photo-1582234302560-f002d9635f28?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', category: ['자연', '산책'] },
+        { name: '국립중앙박물관', type: 'museum', description: '한국의 역사와 문화', image_url: 'https://images.unsplash.com/photo-1604362610191-031201509312?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', category: ['박물관', '역사', '문화'] }
     ];
 
     const handleReplacePlace = async (newPlace) => {
@@ -165,16 +204,21 @@ export function Itinerary() {
                 daySchedule.forEach(item => {
                     allPlaces.push({
                         name: item.place,
-                        // Add mock lat/lon if needed by backend, or backend handles lookup
-                        latitude: 0,
-                        longitude: 0
+                        description: item.description,
+                        type: item.type || 'attraction',
+                        latitude: item.latitude || 0,
+                        longitude: item.longitude || 0
                     });
                 });
             });
 
             const result = await import('../api/travelService').then(m => m.travelService.replacePlace({
                 day: selectedDayForReplace,
-                old_place: { name: selectedPlaceToReplace.place },
+                old_place: {
+                    name: selectedPlaceToReplace.place,
+                    latitude: selectedPlaceToReplace.latitude || 0,
+                    longitude: selectedPlaceToReplace.longitude || 0
+                },
                 new_place: { ...newPlace, latitude: 0, longitude: 0 }, // Backend needs lat/lon
                 all_places: allPlaces,
                 duration_days: days
@@ -184,7 +228,13 @@ export function Itinerary() {
             const updatedDaySchedule = result.updated_itinerary[selectedDayForReplace - 1].schedule.map(item => ({
                 time: item.start_time,
                 place: item.place.name,
-                description: item.place.description
+                description: item.place.description,
+                type: item.place.type || 'attraction',
+                latitude: item.place.latitude || 0,
+                longitude: item.place.longitude || 0,
+                image_url: item.place.image_url,
+                category: item.place.category,
+                travel_from_previous: item.travel_from_previous
             }));
 
             setCurrentSchedule(prev => ({
@@ -201,6 +251,24 @@ export function Itinerary() {
             setReplacingPlace(false);
         }
     };
+
+    // Prepare Map Data for Selected Day
+    const mapData = React.useMemo(() => {
+        if (!currentSchedule || !currentSchedule[selectedDay]) return { positions: [], bounds: [] };
+
+        const daySchedule = currentSchedule[selectedDay];
+        const positions = daySchedule
+            .filter(item => item.latitude && item.longitude)
+            .map(item => ({
+                lat: item.latitude,
+                lng: item.longitude,
+                name: item.place,
+                type: item.type
+            }));
+
+        const bounds = positions.map(p => [p.lat, p.lng]);
+        return { positions, bounds };
+    }, [currentSchedule, selectedDay]);
 
     if (loading) {
         return (
@@ -245,7 +313,7 @@ export function Itinerary() {
             )}
 
             {/* Hero */}
-            <div className="relative h-[60vh] overflow-hidden group">
+            <div className="relative h-[40vh] overflow-hidden group">
                 <img
                     src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1920&q=80"
                     alt={destination}
@@ -256,7 +324,7 @@ export function Itinerary() {
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                             <div>
-                                <h1 className="text-6xl md:text-8xl font-black tracking-tighter capitalize mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                <h1 className="text-5xl md:text-7xl font-black tracking-tighter capitalize mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
                                     {destination}
                                 </h1>
                                 <div className="flex gap-6 text-lg text-gray-300">
@@ -276,92 +344,153 @@ export function Itinerary() {
             </div>
 
             {/* Content */}
-            <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-12">
+            <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
                 {/* Itinerary Timeline */}
                 <div className="flex-1 space-y-16">
                     {itineraryDays.map((day) => (
-                        <div key={day} className="relative pl-10 border-l-2 border-white/10">
-                            <div className="absolute -left-[13px] top-0 w-7 h-7 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/30">
+                        <div key={day} className="relative pl-10 border-l-2 border-white/10" onClick={() => setSelectedDay(day)}>
+                            <div className={`absolute -left-[13px] top-0 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg transition-all cursor-pointer ${selectedDay === day ? 'bg-gradient-to-br from-pink-500 to-purple-600 scale-125' : 'bg-gray-700 hover:bg-gray-600'}`}>
                                 {day}
                             </div>
-                            <h3 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+                            <h3 className={`text-3xl font-bold mb-8 transition-colors cursor-pointer ${selectedDay === day ? 'text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400' : 'text-gray-600 hover:text-gray-400'}`}>
                                 {day}일차: {dynamicItinerary ? '여행 코스' : '탐험 및 문화 체험'}
                             </h3>
 
-                            <div className="space-y-6">
+                            <div className={`space-y-6 ${selectedDay === day ? 'opacity-100' : 'opacity-50 grayscale hover:opacity-80 hover:grayscale-0 transition-all'}`}>
                                 {currentSchedule ? (
                                     // Dynamic Schedule Rendering
                                     currentSchedule[day]?.map((activity, idx) => (
-                                        <div key={idx} className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg relative">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-pink-500/20 rounded-xl text-pink-400">
-                                                        <Clock className="w-5 h-5" />
-                                                    </div>
-                                                    <h4 className="text-xl font-bold">{activity.place}</h4>
+                                        <div key={idx} className="relative">
+                                            {/* Travel Connector Info */}
+                                            {activity.travel_from_previous && (
+                                                <div className="ml-12 mb-6 flex items-center gap-3 text-sm text-gray-400 bg-white/5 p-3 rounded-xl border border-white/5 w-fit">
+                                                    {activity.travel_from_previous.mode === 'walk' ? (
+                                                        <Footprints className="w-4 h-4 text-green-400" />
+                                                    ) : (
+                                                        <Bus className="w-4 h-4 text-blue-400" />
+                                                    )}
+                                                    <span className="font-mono">
+                                                        {activity.travel_from_previous.time_minutes}분
+                                                    </span>
+                                                    <span className="text-gray-600">|</span>
+                                                    <span>{activity.travel_from_previous.distance_km}km</span>
                                                 </div>
-                                                <span className="text-sm text-gray-400 font-mono">{activity.time}</span>
-                                            </div>
-                                            <p className="text-gray-300 leading-relaxed pl-14 mb-4">
-                                                {activity.description}
-                                            </p>
+                                            )}
 
-                                            {/* Replace Button (Visible on Hover) */}
-                                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedPlaceToReplace(activity);
-                                                        setSelectedDayForReplace(day);
-                                                        setShowPlaceModal(true);
-                                                    }}
-                                                    className="bg-white/10 hover:bg-white/20 text-xs px-3 py-1 rounded-full border border-white/20 backdrop-blur-md"
-                                                >
-                                                    🔄 교체
-                                                </button>
+                                            <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg relative overflow-hidden">
+                                                {/* Background Image Gradient Overlay */}
+                                                {activity.image_url && (
+                                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500">
+                                                        <img src={activity.image_url} alt="" className="w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/80"></div>
+                                                    </div>
+                                                )}
+
+                                                <div className="relative z-10 flex gap-6">
+                                                    {/* Time & Icon */}
+                                                    <div className="flex flex-col items-center gap-2 min-w-[60px]">
+                                                        <div className="p-3 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-2xl text-pink-400 border border-pink-500/20">
+                                                            <Clock className="w-6 h-6" />
+                                                        </div>
+                                                        <span className="text-xs font-mono text-gray-400">{activity.time}</span>
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <h4 className="text-xl font-bold text-white mb-1">{activity.place}</h4>
+                                                                <div className="flex flex-wrap gap-2 mb-3">
+                                                                    {activity.category?.slice(0, 3).map((cat, i) => (
+                                                                        <span key={i} className="text-[10px] px-2 py-1 bg-white/10 rounded-full text-gray-300">
+                                                                            #{cat}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            {/* Replace Button */}
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedPlaceToReplace(activity);
+                                                                    setSelectedDayForReplace(day);
+                                                                    setShowPlaceModal(true);
+                                                                }}
+                                                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/20 text-xs px-3 py-1 rounded-full border border-white/20 backdrop-blur-md"
+                                                            >
+                                                                🔄 교체
+                                                            </button>
+                                                        </div>
+                                                        <p className="text-gray-400 text-sm leading-relaxed">
+                                                            {activity.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
                                     // Fallback Static Schedule
-                                    <>
-                                        <div className="group bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-yellow-500/20 rounded-xl text-yellow-400">
-                                                        <Clock className="w-5 h-5" />
-                                                    </div>
-                                                    <h4 className="text-xl font-bold">오전 활동</h4>
-                                                </div>
-                                                <span className="text-sm text-gray-400 font-mono">09:00 AM</span>
-                                            </div>
-                                            <p className="text-gray-300 leading-relaxed pl-14">
-                                                상징적인 랜드마크를 방문하고 현지 문화를 체험하세요. 전통 조식으로 하루를 시작합니다.
-                                            </p>
-                                        </div>
-                                        {/* ... (keep other static items if needed, or just replace all) */}
-                                    </>
+                                    <div className="p-8 text-center text-gray-500">
+                                        일정을 불러오는 중입니다...
+                                    </div>
                                 )}
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Sidebar */}
-                <div className="w-full md:w-96">
-                    <div className="md:sticky md:top-24 space-y-8">
-                        {/* Map */}
-                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden h-80 shadow-2xl">
-                            <iframe
-                                width="100%"
-                                height="100%"
-                                id="gmap_canvas"
-                                src={`https://maps.google.com/maps?q=${encodeURIComponent(destination)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                                frameBorder="0"
-                                scrolling="no"
-                                marginHeight="0"
-                                marginWidth="0"
-                                className="grayscale contrast-125 opacity-80 hover:opacity-100 transition-opacity"
-                            ></iframe>
+                {/* Sidebar (Map & Summary) */}
+                <div className="w-full lg:w-[450px]">
+                    <div className="lg:sticky lg:top-24 space-y-8">
+                        {/* Interactive Map */}
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden h-[500px] shadow-2xl relative z-0">
+                            <MapContainer
+                                center={[37.5665, 126.9780]}
+                                zoom={12}
+                                style={{ height: '100%', width: '100%' }}
+                                className="z-0"
+                            >
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                                />
+                                <ChangeView bounds={mapData.bounds} />
+
+                                {/* Route Line */}
+                                {mapData.positions.length > 1 && (
+                                    <Polyline
+                                        positions={mapData.positions.map(p => [p.lat, p.lng])}
+                                        color="#ec4899" // Pink-500
+                                        weight={4}
+                                        opacity={0.7}
+                                        dashArray="10, 10"
+                                    />
+                                )}
+
+                                {/* Markers */}
+                                {mapData.positions.map((pos, idx) => (
+                                    <Marker key={idx} position={[pos.lat, pos.lng]}>
+                                        <Popup className="text-black">
+                                            <div className="font-bold">{idx + 1}. {pos.name}</div>
+                                            <div className="text-xs text-gray-600 capitalize">{pos.type}</div>
+                                        </Popup>
+                                    </Marker>
+                                ))}
+                            </MapContainer>
+
+                            {/* Map Overlay Controls */}
+                            <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md p-4 rounded-2xl border border-white/10 z-[400]">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-bold text-sm">Day {selectedDay} 루트</h4>
+                                        <p className="text-xs text-gray-400">{mapData.positions.length}개 장소 방문</p>
+                                    </div>
+                                    <Button size="sm" className="bg-white text-black hover:bg-gray-200 text-xs h-8">
+                                        <Navigation className="w-3 h-3 mr-1" /> 크게 보기
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">

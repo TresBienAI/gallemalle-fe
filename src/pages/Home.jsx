@@ -130,6 +130,15 @@ export function Home() {
         }
     };
 
+    const chatContainerRef = React.useRef(null);
+
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
+
     const handleSearch = async (e) => {
         e.preventDefault();
         if (destination.trim()) {
@@ -153,7 +162,17 @@ export function Home() {
 
                 // Check if response looks like an itinerary
                 const parsedData = parseItinerary(aiResponseText);
-                if (parsedData && Object.keys(parsedData.schedule).length > 0) {
+
+                // Prioritize structured plan_data from backend if available
+                if (response.plan_data) {
+                    action = {
+                        label: '일정표 보기',
+                        onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
+                            state: { itineraryData: response.plan_data }
+                        })
+                    };
+                } else if (parsedData && Object.keys(parsedData.schedule).length > 0) {
+                    // Fallback to text parsing
                     action = {
                         label: '일정표 보기',
                         onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
@@ -216,7 +235,10 @@ export function Home() {
                             </p>
                         </>
                     ) : (
-                        <div className="w-full h-[50vh] bg-black/40 backdrop-blur-md rounded-2xl p-6 overflow-y-auto mb-8 flex flex-col gap-4 border border-white/10">
+                        <div
+                            ref={chatContainerRef}
+                            className="w-full h-[50vh] bg-black/40 backdrop-blur-md rounded-2xl p-6 overflow-y-auto mb-8 flex flex-col gap-4 border border-white/10 scroll-smooth"
+                        >
                             {messages.map((msg, idx) => (
                                 <div key={idx} className={`flex flex-col ${msg.isUser ? 'items-end' : 'items-start'}`}>
                                     <div
