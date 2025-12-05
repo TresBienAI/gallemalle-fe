@@ -65,8 +65,31 @@ function TravelModeSelector({ distanceKm, initialMode, initialTimeMin, start, en
 
     const handleGoClick = (e) => {
         e.stopPropagation();
-        if (!start || !end) {
+
+        // For Uber (car), we only strictly need the destination (end)
+        // For Naver Map, we need both start and end
+        if (selectedMode !== 'car' && (!start || !end)) {
             alert('출발지 또는 도착지 정보가 부족합니다.');
+            return;
+        }
+
+        if (selectedMode === 'car') {
+            if (!end) {
+                alert('도착지 정보가 부족합니다.');
+                return;
+            }
+
+            // Uber Universal Link
+            // https://developer.uber.com/docs/riders/ride-requests/tutorials/deep-links/introduction
+            let uberUrl = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${end.lat}&dropoff[longitude]=${end.lng}&dropoff[nickname]=${encodeURIComponent(end.name)}`;
+
+            if (start) {
+                uberUrl += `&pickup[latitude]=${start.lat}&pickup[longitude]=${start.lng}&pickup[nickname]=${encodeURIComponent(start.name)}`;
+            } else {
+                uberUrl += `&pickup=my_location`;
+            }
+
+            window.open(uberUrl, '_blank');
             return;
         }
 

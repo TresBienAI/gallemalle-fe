@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { testBackendConnection } from '../api/testService';
+import { translations } from '../data/translations';
 
 export function Home() {
     const [destination, setDestination] = useState('');
@@ -13,6 +15,10 @@ export function Home() {
     const navigate = useNavigate();
     const scrollContainerRef = React.useRef(null);
     const [backendDestinations, setBackendDestinations] = useState([]);
+
+    // Language State
+    const currentLang = localStorage.getItem('language') || 'KO';
+    const t = translations[currentLang] || translations.KO;
 
     // Local image mapping
     const destinationImages = {
@@ -166,7 +172,7 @@ export function Home() {
                 // Prioritize structured plan_data from backend if available
                 if (response.plan_data) {
                     action = {
-                        label: '일정표 보기',
+                        label: t.viewItinerary,
                         onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
                             state: { itineraryData: response.plan_data }
                         })
@@ -174,7 +180,7 @@ export function Home() {
                 } else if (parsedData && Object.keys(parsedData.schedule).length > 0) {
                     // Fallback to text parsing
                     action = {
-                        label: '일정표 보기',
+                        label: t.viewItinerary,
                         onClick: () => navigate(`/itinerary/${encodeURIComponent(userMessage)}`, {
                             state: { itineraryData: parsedData }
                         })
@@ -228,10 +234,10 @@ export function Home() {
                     {!isChatMode ? (
                         <>
                             <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                                갈래말래!?
+                                {t.title}
                             </h1>
                             <p className="text-xl md:text-2xl text-gray-200 font-light">
-                                나만의 여행 코스를 만들고 공유해보세요.
+                                {t.subtitle}
                             </p>
                         </>
                     ) : (
@@ -269,14 +275,14 @@ export function Home() {
                                     type="text"
                                     value={destination}
                                     onChange={(e) => setDestination(e.target.value)}
-                                    placeholder={isChatMode ? "메시지를 입력하세요..." : "어디로 떠나시나요? (예: 서울, 경주)"}
+                                    placeholder={isChatMode ? t.chatPlaceholder : t.placeholder}
                                     className="w-full bg-transparent border-none text-white placeholder-gray-400 px-4 py-3 text-lg focus:outline-none focus:ring-0"
                                 />
                                 <Button
                                     type="submit"
                                     className="bg-white text-black hover:bg-gray-100 px-8"
                                 >
-                                    {isChatMode ? "Go!" : "Go!"}
+                                    {t.goButton}
                                 </Button>
                             </div>
                         </div>
@@ -284,7 +290,7 @@ export function Home() {
 
                     {!isChatMode && (
                         <div className="pt-2 flex flex-wrap justify-center gap-4 text-sm text-gray-400">
-                            <span>추천:</span>
+                            <span>{t.recommendation}</span>
                             {featuredDestinations.map((dest) => (
                                 <button
                                     key={dest.name}
@@ -294,19 +300,7 @@ export function Home() {
                                     {dest.name}
                                 </button>
                             ))}
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const data = await testBackendConnection();
-                                        alert('Backend Connected! ' + JSON.stringify(data));
-                                    } catch (error) {
-                                        alert('Connection Failed: ' + error.message);
-                                    }
-                                }}
-                                className="text-red-500 hover:text-red-400 underline underline-offset-4 transition-colors"
-                            >
-                                Test Backend
-                            </button>
+
                         </div>
                     )}
                 </div>
@@ -315,7 +309,7 @@ export function Home() {
             {/* Featured Section */}
             {!isChatMode && (
                 <div className="py-10 px-6 max-w-7xl mx-auto">
-                    <h2 className="text-3xl font-bold mb-10 text-center">인기 여행지</h2>
+                    <h2 className="text-3xl font-bold mb-10 text-center">{t.featuredTitle}</h2>
                     <div
                         className="relative group/slider"
                     >
@@ -350,7 +344,7 @@ export function Home() {
                                     <div className="absolute bottom-6 left-6">
                                         <h3 className="text-3xl font-bold mb-2">{dest.name}</h3>
                                         <p className="text-gray-300 text-sm flex items-center gap-1 group-hover:translate-x-2 transition-transform">
-                                            일정 보기 <ChevronRight className="w-4 h-4" />
+                                            {t.viewItinerary} <ChevronRight className="w-4 h-4" />
                                         </p>
                                     </div>
                                 </div>
